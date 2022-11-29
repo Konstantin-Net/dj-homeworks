@@ -27,7 +27,7 @@ def student_factory():
 @pytest.mark.django_db
 def test_one_course(client, course_factory):
     one_course = course_factory()
-    response = client.get('/api/v1/courses/')
+    response = client.get(f'/api/v1/courses/?id={one_course.id}')
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -48,10 +48,11 @@ def test_list_course(client, course_factory):
 @pytest.mark.django_db
 def test_filter_id_course(client, course_factory):
     list_course = course_factory(_quantity=5)
-    response = client.get('/api/v1/courses/?id=3')
+    id_list = list_course[3].id
+    response = client.get(f'/api/v1/courses/?id={id_list}')
     assert response.status_code == 200
     data = response.json()
-    assert data[0]['id'] == 3
+    assert data[0]['id'] == id_list
 
 
 # проверка фильтрации списка курсов по name
@@ -79,7 +80,8 @@ def test_create_course(client):
 def test_patch_course(client, course_factory):
     list_course = course_factory(_quantity=5)
     name_course = 'math'
-    response = client.patch('/api/v1/courses/3/', data={'name': name_course})
+    id_list = list_course[3].id
+    response = client.patch(f'/api/v1/courses/{id_list}/', data={'name': name_course})
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == name_course
@@ -89,7 +91,8 @@ def test_patch_course(client, course_factory):
 @pytest.mark.django_db
 def test_delete_course(client, course_factory):
     list_course = course_factory(_quantity=5)
-    response = client.delete('/api/v1/courses/3/')
+    id_list = list_course[3].id
+    response = client.delete(f'/api/v1/courses/{id_list}/')
     assert response.status_code == 204
     count = Course.objects.count()
     assert count == len(list_course) - 1
